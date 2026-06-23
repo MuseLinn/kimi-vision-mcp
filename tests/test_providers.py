@@ -10,7 +10,7 @@ def provider():
     return MoonshotProvider(
         api_key="sk-test",
         base_url="https://api.moonshot.ai/v1",
-        model="kimi-k2-6-code",
+        model="kimi-k2.7-code",
     )
 
 

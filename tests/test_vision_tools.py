@@ -17,6 +17,6 @@ async def test_analyze_image_tool(tmp_path):
         )
     )
 
-    provider = MoonshotProvider("sk-test", "https://api.moonshot.ai/v1", "kimi-k2-6-code")
+    provider = MoonshotProvider("sk-test", "https://api.moonshot.ai/v1", "kimi-k2.7-code")
     result = await analyze_image(provider, AnalyzeImageInput(path=str(img)))
     assert "login page" in result

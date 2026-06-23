@@ -46,7 +46,7 @@ def load_settings(require_key: bool = True) -> Settings:
     return Settings(
         api_key=api_key,
         base_url=os.environ.get("VISION_BASE_URL", "https://api.moonshot.ai/v1").rstrip("/"),
-        model=os.environ.get("VISION_MODEL", "kimi-k2-6-code"),
+        model=os.environ.get("VISION_MODEL", "kimi-k2.7-code"),
         timeout=_env_int("VISION_TIMEOUT", 300, 10, 3600),
         max_image_size_mb=_env_int("VISION_MAX_IMAGE_SIZE_MB", 20, 1, 100),
         max_video_size_mb=_env_int("VISION_MAX_VIDEO_SIZE_MB", 100, 1, 500),

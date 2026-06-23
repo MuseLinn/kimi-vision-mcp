@@ -85,8 +85,8 @@ class MoonshotProvider(VisionProvider):
                 "content": [
                     {"type": "text", "text": user_prompt},
                     {
-                        "type": "image_url",
-                        "image_url": {"url": f"data:{mime};base64,{video_b64}"},
+                        "type": "video_url",
+                        "video_url": {"url": f"data:{mime};base64,{video_b64}"},
                     },
                 ],
             },

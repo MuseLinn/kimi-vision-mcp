@@ -5,12 +5,12 @@ from src.config import load_settings
 
 def test_settings_from_env(monkeypatch):
     monkeypatch.setenv("MOONSHOT_API_KEY", "sk-test")
-    monkeypatch.setenv("VISION_MODEL", "kimi-k2-6-code")
+    monkeypatch.setenv("VISION_MODEL", "kimi-k2.7-code")
     monkeypatch.setenv("VISION_TIMEOUT", "120")
 
     settings = load_settings()
     assert settings.api_key == "sk-test"
-    assert settings.model == "kimi-k2-6-code"
+    assert settings.model == "kimi-k2.7-code"
     assert settings.timeout == 120
 
 
@@ -21,7 +21,7 @@ def test_settings_defaults(monkeypatch):
 
     settings = load_settings()
     assert settings.base_url == "https://api.moonshot.ai/v1"
-    assert settings.model == "kimi-k2-6-code"
+    assert settings.model == "kimi-k2.7-code"
     assert settings.timeout == 300
 
 

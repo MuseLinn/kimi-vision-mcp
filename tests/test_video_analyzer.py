@@ -21,7 +21,7 @@ async def test_analyze_video_file(tmp_path):
         )
     )
 
-    provider = MoonshotProvider("sk-test", "https://api.moonshot.ai/v1", "kimi-k2-6-code")
+    provider = MoonshotProvider("sk-test", "https://api.moonshot.ai/v1", "kimi-k2.7-code")
     result = await analyze_video_file(provider, AnalyzeVideoInput(path=str(video), detail="brief"))
     assert result["summary"] == "A demo video"
     assert result["detail_level"] == "brief"

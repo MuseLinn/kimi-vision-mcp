@@ -62,7 +62,7 @@ Add to your Claude Desktop / Claude Code MCP config:
       "args": ["C:/Users/unive/projects/video-analyzer-mcp/server.py"],
       "env": {
         "MOONSHOT_API_KEY": "your_api_key",
-        "VISION_MODEL": "kimi-k2-6-code"
+        "VISION_MODEL": "kimi-k2.7-code"
       }
     }
   }
@@ -74,7 +74,7 @@ Add to your Claude Desktop / Claude Code MCP config:
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `MOONSHOT_API_KEY` | — | **Required.** Moonshot API key |
-| `VISION_MODEL` | `kimi-k2-6-code` | Vision model to use |
+| `VISION_MODEL` | `kimi-k2.7-code` | Vision model to use |
 | `VISION_BASE_URL` | `https://api.moonshot.ai/v1` | OpenAI-compatible base URL |
 | `VISION_TIMEOUT` | `300` | API timeout in seconds |
 | `VISION_MAX_IMAGE_SIZE_MB` | `20` | Max image file size |
