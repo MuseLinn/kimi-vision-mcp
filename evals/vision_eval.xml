@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<evaluation>
+  <qa_pair>
+    <question>Use vision_analyze_image on tests/fixtures/ui_login.png. What UI element is typically in the center?</question>
+    <answer>login button</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Use vision_extract_text on tests/fixtures/terminal_error.png with source_type=terminal. What Python error appears?</question>
+    <answer>ModuleNotFoundError</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Use vision_understand_diagram on tests/fixtures/arch.png with diagram_type=architecture. How many main layers are shown?</question>
+    <answer>3</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Use vision_analyze_data_viz on tests/fixtures/chart.png. What is the highest value month?</question>
+    <answer>December</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Use vision_diagnose_error on tests/fixtures/error_404.png. What HTTP status code is shown?</question>
+    <answer>404</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Use vision_ui_diff_check comparing tests/fixtures/ui_v1.png and tests/fixtures/ui_v2.png. What changed between the two screenshots?</question>
+    <answer>button color</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Use vision_ui_to_artifact on tests/fixtures/calculator_ui.png with target=html. What kind of component is generated?</question>
+    <answer>calculator</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Use vision_analyze_video on tests/fixtures/demo.mp4 with detail=brief. What field in the response indicates the analysis detail level?</question>
+    <answer>detail_level</answer>
+  </qa_pair>
+</evaluation>
