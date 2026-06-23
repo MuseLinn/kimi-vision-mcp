@@ -75,18 +75,14 @@ async def ui_to_artifact(provider: VisionProvider, params: UIToArtifactInput) ->
     return await _run_image_analysis(provider, "ui_to_artifact", params.path, "smart", extra)
 
 
-async def extract_text_from_screenshot(
-    provider: VisionProvider, params: ExtractTextInput
-) -> str:
+async def extract_text_from_screenshot(provider: VisionProvider, params: ExtractTextInput) -> str:
     extra = f"Source type: {params.source_type}"
     return await _run_image_analysis(
         provider, "extract_text_from_screenshot", params.path, "detailed", extra
     )
 
 
-async def diagnose_error_screenshot(
-    provider: VisionProvider, params: DiagnoseErrorInput
-) -> str:
+async def diagnose_error_screenshot(provider: VisionProvider, params: DiagnoseErrorInput) -> str:
     return await _run_image_analysis(
         provider, "diagnose_error_screenshot", params.path, "detailed", params.context
     )
@@ -101,9 +97,7 @@ async def understand_technical_diagram(
     )
 
 
-async def analyze_data_visualization(
-    provider: VisionProvider, params: AnalyzeDataVizInput
-) -> str:
+async def analyze_data_visualization(provider: VisionProvider, params: AnalyzeDataVizInput) -> str:
     extra = params.question
     return await _run_image_analysis(
         provider, "analyze_data_visualization", params.path, "smart", extra
