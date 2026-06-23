@@ -120,6 +120,12 @@ python server.py --transport streamable-http --port 8000
 python install.py uninstall
 ```
 
+## Documentation
+
+- [Architecture](docs/architecture.md)
+- [Tool Reference](docs/tools.md)
+- [Development Guide](docs/development.md)
+
 ## License
 
 MIT
