@@ -1,0 +1,10 @@
+{
+  "name": "kimi-vision-mcp",
+  "version": "0.2.0",
+  "description": "Kimi-powered vision MCP server — image understanding, OCR, UI analysis, diagram comprehension, data viz, video analysis, error diagnosis",
+  "author": { "name": "MuseLinn", "url": "https://github.com/MuseLinn" },
+  "repository": "https://github.com/MuseLinn/kimi-vision-mcp",
+  "license": "MIT",
+  "keywords": ["vision", "kimi", "moonshot", "mcp", "image", "ocr", "ui", "video"],
+  "skills": ["./skills"]
+}
