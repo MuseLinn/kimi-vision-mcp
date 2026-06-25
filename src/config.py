@@ -3,7 +3,10 @@
 Priority order for resolving vision model:
   1. Explicit env vars: VISION_API_KEY + VISION_BASE_URL + VISION_MODEL
   2. Legacy env var: MOONSHOT_API_KEY (Moonshot API fallback)
-  3. kimi-code config.toml auto-discovery (filters vision-capable models)
+  3. kimi-code config.toml auto-discovery (read-only, filters vision-capable models)
+
+MCP-specific defaults (default_model, timeout, etc.) live in ~/.kimi-vision/config.toml
+— this is a SEPARATE file, never touches ~/.kimi-code/config.toml.
 """
 
 import os
@@ -12,7 +15,7 @@ from dataclasses import dataclass, field
 from src.kimi_config import (
     VisionCandidate,
     discover_vision_models,
-    load_kimi_vision_config,
+    load_mcp_config,
     select_best_vision_model,
 )
 
@@ -55,9 +58,9 @@ def _try_kimi_code_config() -> tuple[str, str, str, str] | None:
     if not candidates:
         return None
 
-    # Get [kimi-vision] default_model if no env override
-    kv_cfg = load_kimi_vision_config()
-    preferred = kv_cfg.default_model if kv_cfg else ""
+    # Get MCP config default_model if no env override
+    mcp_cfg = load_mcp_config()
+    preferred = mcp_cfg.default_model if mcp_cfg else ""
 
     selected = select_best_vision_model(candidates, preferred)
     if selected is None:
@@ -71,15 +74,15 @@ def load_settings(require_key: bool = True) -> Settings:
 
     1. Explicit VISION_API_KEY / VISION_BASE_URL / VISION_MODEL env vars
     2. MOONSHOT_API_KEY legacy env var
-    3. kimi-code config.toml auto-discovery (uses [kimi-vision] defaults)
+    3. kimi-code config.toml auto-discovery (read-only, with MCP config defaults)
     """
-    # Read [kimi-vision] section for defaults
-    kv_cfg = load_kimi_vision_config()
-    kv_timeout = kv_cfg.timeout if kv_cfg else 300
-    kv_max_image = kv_cfg.max_image_size_mb if kv_cfg else 20
-    kv_max_video = kv_cfg.max_video_size_mb if kv_cfg else 100
+    # Read MCP config (~/.kimi-vision/config.toml) for defaults
+    mcp_cfg = load_mcp_config()
+    kv_timeout = mcp_cfg.timeout if mcp_cfg else 300
+    kv_max_image = mcp_cfg.max_image_size_mb if mcp_cfg else 20
+    kv_max_video = mcp_cfg.max_video_size_mb if mcp_cfg else 100
 
-    # Env vars override [kimi-vision] defaults; validated via _env_int
+    # Env vars override MCP config defaults; validated via _env_int
     timeout = _env_int("VISION_TIMEOUT", kv_timeout, 10, 3600)
     max_image = _env_int("VISION_MAX_IMAGE_SIZE_MB", kv_max_image, 1, 100)
     max_video = _env_int("VISION_MAX_VIDEO_SIZE_MB", kv_max_video, 1, 500)
@@ -133,7 +136,10 @@ def load_settings(require_key: bool = True) -> Settings:
             "No vision model configured. Set one of:\n"
             "  1. VISION_API_KEY + VISION_BASE_URL + VISION_MODEL\n"
             "  2. MOONSHOT_API_KEY\n"
-            "  3. A vision-capable model in ~/.kimi-code/config.toml"
+            "  3. A vision-capable model in ~/.kimi-code/config.toml\n"
+            "\n"
+            "To set MCP defaults, create ~/.kimi-vision/config.toml:\n"
+            '  default_model = "opencode-go/mimo-v2.5"'
         )
 
     return Settings(
@@ -152,11 +158,11 @@ def list_vision_models() -> VisionModelList:
 
     Selection priority:
       1. VISION_MODEL env var
-      2. [kimi-vision] default_model in config.toml
+      2. default_model in ~/.kimi-vision/config.toml
       3. First candidate
     """
     candidates = discover_vision_models()
-    kv_cfg = load_kimi_vision_config()
-    preferred = kv_cfg.default_model if kv_cfg else ""
+    mcp_cfg = load_mcp_config()
+    preferred = mcp_cfg.default_model if mcp_cfg else ""
     selected = select_best_vision_model(candidates, preferred)
     return VisionModelList(candidates=candidates, selected=selected)

@@ -81,7 +81,7 @@ def test_list_vision_models_from_config(tmp_path, monkeypatch):
         'display_name = "MiMo V2.5"\n',
         encoding="utf-8",
     )
-    monkeypatch.setattr("src.kimi_config._kimi_config_path", lambda: config)
+    monkeypatch.setattr("src.kimi_config._kimi_code_config_path", lambda: config)
     monkeypatch.delenv("VISION_MODEL", raising=False)
 
     result = list_vision_models()
@@ -90,14 +90,27 @@ def test_list_vision_models_from_config(tmp_path, monkeypatch):
 
 
 def test_kimi_vision_default_model_overrides_order(tmp_path, monkeypatch):
-    """[kimi-vision] default_model selects the right model from config."""
+    """~/.kimi-vision/config.toml default_model selects the right model."""
     config = tmp_path / "config.toml"
     config.write_text(
         textwrap.dedent(
             """\
-            [kimi-vision]
             default_model = "p1/model-b"
+            """
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr("src.kimi_config._mcp_config_path", lambda: config)
+    monkeypatch.delenv("VISION_MODEL", raising=False)
 
+    # We need a kimi-code config too for model discovery
+    monkeypatch.setattr(
+        "src.kimi_config._kimi_code_config_path",
+        lambda: tmp_path / "kimi.toml",
+    )
+    (tmp_path / "kimi.toml").write_text(
+        textwrap.dedent(
+            """\
             [providers.p1]
             type = "openai"
             api_key = "sk-test"
@@ -118,22 +131,28 @@ def test_kimi_vision_default_model_overrides_order(tmp_path, monkeypatch):
         ),
         encoding="utf-8",
     )
-    monkeypatch.setattr("src.kimi_config._kimi_config_path", lambda: config)
-    monkeypatch.delenv("VISION_MODEL", raising=False)
 
     result = list_vision_models()
     assert result.selected.model == "model-b"
 
 
-def test_env_vision_model_overrides_kimi_vision_default(tmp_path, monkeypatch):
-    """VISION_MODEL env var takes priority over [kimi-vision] default_model."""
-    config = tmp_path / "config.toml"
+def test_env_vision_model_overrides_mcp_default(tmp_path, monkeypatch):
+    """VISION_MODEL env var takes priority over ~/.kimi-vision/config.toml default_model."""
+    config = tmp_path / "mcp_config.toml"
     config.write_text(
+        'default_model = "p1/model-b"\n',
+        encoding="utf-8",
+    )
+    monkeypatch.setattr("src.kimi_config._mcp_config_path", lambda: config)
+    monkeypatch.setenv("VISION_MODEL", "p1/model-a")
+
+    monkeypatch.setattr(
+        "src.kimi_config._kimi_code_config_path",
+        lambda: tmp_path / "kimi.toml",
+    )
+    (tmp_path / "kimi.toml").write_text(
         textwrap.dedent(
             """\
-            [kimi-vision]
-            default_model = "p1/model-b"
-
             [providers.p1]
             type = "openai"
             api_key = "sk-test"
@@ -154,8 +173,6 @@ def test_env_vision_model_overrides_kimi_vision_default(tmp_path, monkeypatch):
         ),
         encoding="utf-8",
     )
-    monkeypatch.setattr("src.kimi_config._kimi_config_path", lambda: config)
-    monkeypatch.setenv("VISION_MODEL", "p1/model-a")
 
     result = list_vision_models()
     assert result.selected.model == "model-a"

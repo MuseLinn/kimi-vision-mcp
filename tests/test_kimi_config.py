@@ -1,11 +1,11 @@
-"""Tests for kimi-code config.toml auto-discovery."""
+"""Tests for kimi-code config.toml auto-discovery and MCP config."""
 
 import textwrap
 from pathlib import Path
 
 from src.kimi_config import (
     discover_vision_models,
-    load_kimi_vision_config,
+    load_mcp_config,
     select_best_vision_model,
 )
 
@@ -168,52 +168,41 @@ def test_select_best_empty(tmp_path):
     assert select_best_vision_model([]) is None
 
 
-# ── load_kimi_vision_config ─────────────────────────────────────────
+# ── load_mcp_config (~/.kimi-vision/config.toml) ───────────────────
 
 
-def test_kimi_vision_config_present(tmp_path):
+def test_mcp_config_present(tmp_path):
     config = _write_config(
         tmp_path,
         """
-        [kimi-vision]
         default_model = "opencode-go/mimo-v2.5"
         timeout = 600
         max_image_size_mb = 30
         max_video_size_mb = 200
         """,
     )
-    kv = load_kimi_vision_config(config)
-    assert kv is not None
-    assert kv.default_model == "opencode-go/mimo-v2.5"
-    assert kv.timeout == 600
-    assert kv.max_image_size_mb == 30
-    assert kv.max_video_size_mb == 200
+    cfg = load_mcp_config(config)
+    assert cfg is not None
+    assert cfg.default_model == "opencode-go/mimo-v2.5"
+    assert cfg.timeout == 600
+    assert cfg.max_image_size_mb == 30
+    assert cfg.max_video_size_mb == 200
 
 
-def test_kimi_vision_config_missing(tmp_path):
+def test_mcp_config_missing(tmp_path):
+    cfg = load_mcp_config(tmp_path / "nonexistent.toml")
+    assert cfg is None
+
+
+def test_mcp_config_partial(tmp_path):
     config = _write_config(
         tmp_path,
         """
-        [providers.p1]
-        type = "openai"
-        api_key = "sk-1"
-        base_url = "https://example.com/v1"
-        """,
-    )
-    kv = load_kimi_vision_config(config)
-    assert kv is None
-
-
-def test_kimi_vision_config_partial(tmp_path):
-    config = _write_config(
-        tmp_path,
-        """
-        [kimi-vision]
         default_model = "opencode-go/qwen3.5-plus"
         """,
     )
-    kv = load_kimi_vision_config(config)
-    assert kv is not None
-    assert kv.default_model == "opencode-go/qwen3.5-plus"
-    assert kv.timeout == 300  # default
-    assert kv.max_image_size_mb == 20  # default
+    cfg = load_mcp_config(config)
+    assert cfg is not None
+    assert cfg.default_model == "opencode-go/qwen3.5-plus"
+    assert cfg.timeout == 300  # default
+    assert cfg.max_image_size_mb == 20  # default
