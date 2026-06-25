@@ -12,6 +12,7 @@ from dataclasses import dataclass, field
 from src.kimi_config import (
     VisionCandidate,
     discover_vision_models,
+    load_kimi_vision_config,
     select_best_vision_model,
 )
 
@@ -54,7 +55,10 @@ def _try_kimi_code_config() -> tuple[str, str, str, str] | None:
     if not candidates:
         return None
 
-    preferred = os.environ.get("VISION_MODEL", "")
+    # Get [kimi-vision] default_model if no env override
+    kv_cfg = load_kimi_vision_config()
+    preferred = kv_cfg.default_model if kv_cfg else ""
+
     selected = select_best_vision_model(candidates, preferred)
     if selected is None:
         return None
@@ -67,11 +71,18 @@ def load_settings(require_key: bool = True) -> Settings:
 
     1. Explicit VISION_API_KEY / VISION_BASE_URL / VISION_MODEL env vars
     2. MOONSHOT_API_KEY legacy env var
-    3. kimi-code config.toml auto-discovery
+    3. kimi-code config.toml auto-discovery (uses [kimi-vision] defaults)
     """
-    timeout = _env_int("VISION_TIMEOUT", 300, 10, 3600)
-    max_image = _env_int("VISION_MAX_IMAGE_SIZE_MB", 20, 1, 100)
-    max_video = _env_int("VISION_MAX_VIDEO_SIZE_MB", 100, 1, 500)
+    # Read [kimi-vision] section for defaults
+    kv_cfg = load_kimi_vision_config()
+    kv_timeout = kv_cfg.timeout if kv_cfg else 300
+    kv_max_image = kv_cfg.max_image_size_mb if kv_cfg else 20
+    kv_max_video = kv_cfg.max_video_size_mb if kv_cfg else 100
+
+    # Env vars override [kimi-vision] defaults; validated via _env_int
+    timeout = _env_int("VISION_TIMEOUT", kv_timeout, 10, 3600)
+    max_image = _env_int("VISION_MAX_IMAGE_SIZE_MB", kv_max_image, 1, 100)
+    max_video = _env_int("VISION_MAX_VIDEO_SIZE_MB", kv_max_video, 1, 500)
 
     # Priority 1: explicit env vars
     api_key = os.environ.get("VISION_API_KEY", "").strip()
@@ -137,8 +148,15 @@ def load_settings(require_key: bool = True) -> Settings:
 
 
 def list_vision_models() -> VisionModelList:
-    """Discover all vision-capable models from kimi-code config.toml."""
+    """Discover all vision-capable models from kimi-code config.toml.
+
+    Selection priority:
+      1. VISION_MODEL env var
+      2. [kimi-vision] default_model in config.toml
+      3. First candidate
+    """
     candidates = discover_vision_models()
-    preferred = os.environ.get("VISION_MODEL", "")
+    kv_cfg = load_kimi_vision_config()
+    preferred = kv_cfg.default_model if kv_cfg else ""
     selected = select_best_vision_model(candidates, preferred)
     return VisionModelList(candidates=candidates, selected=selected)

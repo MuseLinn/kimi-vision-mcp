@@ -3,13 +3,20 @@
 import textwrap
 from pathlib import Path
 
-from src.kimi_config import discover_vision_models, select_best_vision_model
+from src.kimi_config import (
+    discover_vision_models,
+    load_kimi_vision_config,
+    select_best_vision_model,
+)
 
 
 def _write_config(tmp_path: Path, content: str) -> Path:
     p = tmp_path / "config.toml"
     p.write_text(textwrap.dedent(content), encoding="utf-8")
     return p
+
+
+# ── discover_vision_models ──────────────────────────────────────────
 
 
 def test_discover_vision_models_basic(tmp_path):
@@ -104,6 +111,9 @@ def test_discover_missing_config(tmp_path):
     assert candidates == []
 
 
+# ── select_best_vision_model ────────────────────────────────────────
+
+
 def test_select_best_preferred_match(tmp_path):
     config = _write_config(
         tmp_path,
@@ -156,3 +166,54 @@ def test_select_best_fallback_first(tmp_path):
 
 def test_select_best_empty(tmp_path):
     assert select_best_vision_model([]) is None
+
+
+# ── load_kimi_vision_config ─────────────────────────────────────────
+
+
+def test_kimi_vision_config_present(tmp_path):
+    config = _write_config(
+        tmp_path,
+        """
+        [kimi-vision]
+        default_model = "opencode-go/mimo-v2.5"
+        timeout = 600
+        max_image_size_mb = 30
+        max_video_size_mb = 200
+        """,
+    )
+    kv = load_kimi_vision_config(config)
+    assert kv is not None
+    assert kv.default_model == "opencode-go/mimo-v2.5"
+    assert kv.timeout == 600
+    assert kv.max_image_size_mb == 30
+    assert kv.max_video_size_mb == 200
+
+
+def test_kimi_vision_config_missing(tmp_path):
+    config = _write_config(
+        tmp_path,
+        """
+        [providers.p1]
+        type = "openai"
+        api_key = "sk-1"
+        base_url = "https://example.com/v1"
+        """,
+    )
+    kv = load_kimi_vision_config(config)
+    assert kv is None
+
+
+def test_kimi_vision_config_partial(tmp_path):
+    config = _write_config(
+        tmp_path,
+        """
+        [kimi-vision]
+        default_model = "opencode-go/qwen3.5-plus"
+        """,
+    )
+    kv = load_kimi_vision_config(config)
+    assert kv is not None
+    assert kv.default_model == "opencode-go/qwen3.5-plus"
+    assert kv.timeout == 300  # default
+    assert kv.max_image_size_mb == 20  # default

@@ -1,5 +1,7 @@
 """Tests for settings configuration."""
 
+import textwrap
+
 import pytest
 
 from src.config import load_settings, list_vision_models
@@ -85,3 +87,75 @@ def test_list_vision_models_from_config(tmp_path, monkeypatch):
     result = list_vision_models()
     assert len(result.candidates) == 1
     assert result.selected.model == "mimo-v2.5"
+
+
+def test_kimi_vision_default_model_overrides_order(tmp_path, monkeypatch):
+    """[kimi-vision] default_model selects the right model from config."""
+    config = tmp_path / "config.toml"
+    config.write_text(
+        textwrap.dedent(
+            """\
+            [kimi-vision]
+            default_model = "p1/model-b"
+
+            [providers.p1]
+            type = "openai"
+            api_key = "sk-test"
+            base_url = "https://example.com/v1"
+
+            [models."p1/model-a"]
+            provider = "p1"
+            model = "model-a"
+            capabilities = ["image_in"]
+            display_name = "Model A"
+
+            [models."p1/model-b"]
+            provider = "p1"
+            model = "model-b"
+            capabilities = ["image_in"]
+            display_name = "Model B"
+            """
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr("src.kimi_config._kimi_config_path", lambda: config)
+    monkeypatch.delenv("VISION_MODEL", raising=False)
+
+    result = list_vision_models()
+    assert result.selected.model == "model-b"
+
+
+def test_env_vision_model_overrides_kimi_vision_default(tmp_path, monkeypatch):
+    """VISION_MODEL env var takes priority over [kimi-vision] default_model."""
+    config = tmp_path / "config.toml"
+    config.write_text(
+        textwrap.dedent(
+            """\
+            [kimi-vision]
+            default_model = "p1/model-b"
+
+            [providers.p1]
+            type = "openai"
+            api_key = "sk-test"
+            base_url = "https://example.com/v1"
+
+            [models."p1/model-a"]
+            provider = "p1"
+            model = "model-a"
+            capabilities = ["image_in"]
+            display_name = "Model A"
+
+            [models."p1/model-b"]
+            provider = "p1"
+            model = "model-b"
+            capabilities = ["image_in"]
+            display_name = "Model B"
+            """
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr("src.kimi_config._kimi_config_path", lambda: config)
+    monkeypatch.setenv("VISION_MODEL", "p1/model-a")
+
+    result = list_vision_models()
+    assert result.selected.model == "model-a"
