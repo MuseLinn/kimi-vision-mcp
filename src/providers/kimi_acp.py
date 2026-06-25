@@ -106,7 +106,11 @@ class KimiACPProvider:
 
     async def chat(self, messages: list[dict]) -> str:
         """Send a conversational prompt (text only)."""
-        text = messages[-1]["content"] if isinstance(messages[-1].get("content"), str) else str(messages[-1].get("content", ""))
+        text = (
+            messages[-1]["content"]
+            if isinstance(messages[-1].get("content"), str)
+            else str(messages[-1].get("content", ""))
+        )
         return await self._acp_prompt([{"type": "text", "text": text}])
 
     # ------------------------------------------------------------------
@@ -153,10 +157,13 @@ class KimiACPProvider:
         await self._wait_response(req)
 
     async def _create_session(self) -> str:
-        req = await self._send("session/new", {
-            "cwd": os.getcwd(),
-            "mcpServers": [],
-        })
+        req = await self._send(
+            "session/new",
+            {
+                "cwd": os.getcwd(),
+                "mcpServers": [],
+            },
+        )
         result = await self._wait_response(req, timeout=30)
         sid = result.get("sessionId")
         if not sid:
@@ -171,10 +178,13 @@ class KimiACPProvider:
         until we see that response.
         """
         async with self._lock:
-            req = await self._send("session/prompt", {
-                "sessionId": self._session_id,
-                "prompt": content,
-            })
+            req = await self._send(
+                "session/prompt",
+                {
+                    "sessionId": self._session_id,
+                    "prompt": content,
+                },
+            )
             chunks: list[str] = []
             deadline = asyncio.get_event_loop().time() + self._timeout
 
